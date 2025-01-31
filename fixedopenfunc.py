@@ -1,4 +1,5 @@
-# ui.py
+# a2.py
+
 
 # Starter code for assignment 2 in ICS 32 Programming with Software Libraries in Python
 
@@ -20,16 +21,14 @@ from pathlib import Path
 import shlex
 import json
 
-global profile
-global file_name
-global path
-
+path = ""
+file_name = ""
+profile = ""
 
 def edit_file(arr):
-    global file_name
-    global profile
-    global path
+    
     try:
+        global profile
         for i in range(len(arr)-1):
             value = arr[i]
             if value=='-usr':
@@ -48,9 +47,7 @@ def edit_file(arr):
         
 
 def print_file(arr):
-    global file_name
-    global profile
-    global path
+    
 
 #     -usr Prints the username stored in the profile object
 
@@ -64,6 +61,7 @@ def print_file(arr):
 
 # -all Prints all content stored in the profile object
     try:
+        global profile
         for i in range(len(arr)):
             if arr[i]=='-usr':
                 print(profile.username)
@@ -81,7 +79,7 @@ def print_file(arr):
                     index = arr[i+1]
                     print(content[index])
             elif arr[i]=='-all':
-                absolute_path = path / file_name
+                absolute_path = Path(path / file_name)
                 f = open(absolute_path, "r")
                 line = f.readline()
                 dictionary = json.loads(line)
@@ -94,16 +92,21 @@ def print_file(arr):
     
 # Open An Exisiting File
 def open_file(arr):
-    global profile
+
     if len(arr) != 2:
         print("ERROR")
     try: 
         if Path(arr[1]).exists():
-            # Output Profile Info
+
+            # Output Profile Info Based On File
+            f = Path(arr[1])
+            myFile = f.open("r")
             print("Here is the information in your profile:")
-            print("Username:", profile.username)
-            print("Password:", profile.password)
-            print("Bio:", profile.bio)
+            line = myFile.readline()
+            dictionary = json.loads(line)
+            for key,value in dictionary.items():
+                print(f"{key}: {value}")
+            
     except Exception as e:
         print(e)
 
@@ -119,20 +122,13 @@ def delete_file(arr):
         return f"{file_path} DELETED"
 
 def create_file(arr):
-    global profile 
-    global file_name
-    global path 
     try:
         path = Path(arr[1])
         file_name = arr[-1] + ".dsu"
 
         # Create file
         f = path / file_name
-
-        if f.exists():
-            print("File already exists. Try Opening it.")
-        else:
-            f.touch()
+        f.touch()
         
         username = input("Enter a username: ")
         password = input("Enter a password: ")
@@ -144,7 +140,7 @@ def create_file(arr):
 
 
     except Exception as e:
-        raise e
+        print(e)
 
     # Prompt User Using Profile Class
     #  username: a unique name to associate the user with posts.
@@ -170,22 +166,23 @@ def read_file(arr):
         return content
 
 def main():
+    global path
+    global file_name
     user = input()
     while user!='Q':
         try:
             if user == "Q":  
                 # break
                 pass
-
             command = user[0]
             arr = shlex.split(user)
 
-            if command == "C":  
+            if command == "C":
+                file_name = arr[3] + ".dsu" 
+                path = Path(arr[1])
                 create_file(arr)
-
             elif command == "D":  
                 delete_file(arr)
-
             elif command == "R":  
                 read_file(arr)
             elif command=="O":
